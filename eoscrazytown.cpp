@@ -23,11 +23,9 @@ using eosio::contract;
 using eosio::permission_level;
 using eosio::action;
 
-class eoscrazytown : public kyubey {
+class eoscrazytown : public contract {
     public:    
-    eoscrazytown(account_name self) : token(self) {
-
-    }
+        eoscrazytown(account_name self) : token(self) {}
 
     enum suitType {
         SPADE, HEART, DIAMOND, CLUD
