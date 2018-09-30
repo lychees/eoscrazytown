@@ -1,140 +1,132 @@
 /**
- *  @dev minakokojima, yukiexe
+ *  @dev minakokojima
  *  @copyright Andoromeda
  */
 #pragma once
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/asset.hpp>
 #include <eosiolib/contract.hpp>
+#include <eosiolib/transaction.hpp>
+#include "kyubey.hpp"
+#include "utils.hpp"
 
 #include <cmath>
 #include <string>
 
-#define EOS_SYMBOL S(4, EOS)
-#define TOKEN_CONTRACT N(eosio.token)
-
 typedef double real_type;
 
-using std::string;
-using eosio::symbol_name;
-using eosio::asset;
-using eosio::symbol_type;
-using eosio::contract;
-using eosio::permission_level;
-using eosio::action;
+class crazytown : public kyubey {
+    public:
+        crazytown(account_name self):
+            kyubey(self),
+            global(_self, _self),
+            offers(_self, _self) {}
 
-class eoscrazytown : public kyubey {
-    public:    
-    eoscrazytown(account_name self) : kyuber(self) {
-    }
+        // @abi action  
+        void transfer(account_name from,
+                      account_name to,
+                      asset        quantity,
+                      string       memo);    
 
-    enum suitType {
-        SPADE, HEART, DIAMOND, CLUD
-    };
+        // @abi action
+        void init(const checksum256& hash);
+        // @abi action
+        void test(const account_name account, asset eos);
+        // @abi action
+        void buy(const account_name account, asset eos);
+        // @abi action        
+        void sell(const account_name account, asset dmt); 
 
-    struct card {
-        suitType suit ;
-        uint8_t points ;
-    } ;
- 
-    // @abi table global i64
-    /*
-    struct global {
-        uint64_t id = 0;        
-        uint64_t defer_id = 0;
-        card a ;
-        card b ;       
-        time roundTimeStamp;
-        uint64_t primary_key() const { return id; }
-        EOSLIB_SERIALIZE(global, (id)(defer_id)(reserve)(supply)(claim_time)) 
-    };
-    typedef eosio::multi_index<N(global), global> global_index;
-    global_index global;             
-    */    
+        // EOS transfer event.
+        void onTransfer(account_name from,
+                        account_name to,
+                        asset        quantity,
+                        string       memo);                                        
 
-    // @abi table order i64    
-    struct player {
-        account_name  account;
-        asset         quantity;
-        auto primary_key() const { return account; }
-    
-        EOSLIB_SERIALIZE(player, (account)(quantity)) 
-    };
-    typedef eosio::multi_index<N(player), player> player_index;
-    player_index players;  
+        // @abi action
+        void reveal( const checksum256 &seed, const checksum256 &hash);
+
+        // @abi action
+        void betreceipt(const rec_bet& rec);
+        // @abi action
+        void receipt(const rec_reveal& rec);        
+        // @abi action
+        void buyreceipt(const rec_buy& rec);
+        // @abi action
+        void sellreceipt(const rec_sell& rec);
+
+        real_type grief_ratio() const;
+
+        // @abi table global i64
+        struct global {
+            uint64_t id = 0;        
+            uint64_t defer_id = 0;
+            checksum256 hash; // hash of the game seed, 0 when idle.
+            uint64_t offerBalance; // All balance in offer list.
+
+            uint64_t primary_key() const { return id; }
+            EOSLIB_SERIALIZE(global, (id)(defer_id)(hash)(offerBalance)) 
+        };
+        typedef eosio::multi_index<N(global), global> global_index;
+        global_index global;          
+
+        // @abi table offer i64
+        struct offer {
+            uint64_t id;
+            account_name owner;
+            uint64_t bet;
+            uint64_t under;
+            checksum256 seed;
+
+            uint64_t primary_key() const { return id; }
+            EOSLIB_SERIALIZE(offer, (id)(owner)(bet)(under)(seed))
+        };
+        typedef eosio::multi_index<N(offer), offer> offer_index;
+        offer_index offers;
+
+        // @abi table result i64
+        struct result {
+            uint64_t id;
+            uint64_t roll_number;
+            uint64_t primary_key() const { return id; }
+            EOSLIB_SERIALIZE(result, (id)(roll_number))
+        };
+        typedef eosio::multi_index<N(result), result> results;
+        
+        void send_referal_bonus(const account_name referal, asset eos);
+        void bet(const account_name account, const account_name referal, asset eos, const checksum256& seed, const uint64_t bet_number);
+        void deal_with(eosio::multi_index< N(offer), offer>::const_iterator itr, const checksum256& seed);
+        void set_roll_result(const account_name account, uint64_t roll_number);
+
+        uint64_t get_bonus(uint64_t seed) const;
+        uint64_t merge_seed(const checksum256& s1, const checksum256& s2) const;
+        checksum256 parse_memo(const std::string &memo) const;
+
+        uint64_t get_next_defer_id() {
+            auto g = global.get(0);
+            global.modify(g, 0, [&](auto &g) {
+               g.defer_id += 1;
+            });        
+            return g.defer_id;
+        }
+
+        template <typename... Args>
+        void send_defer_action(Args&&... args) {
+            transaction trx;
+            trx.actions.emplace_back(std::forward<Args>(args)...);
+            trx.send(get_next_defer_id(), _self, false);
+        }
 };
 
-// ===
-auto eoscrazytown::getResult ( const card a,  const card b ) {
-    /*
-    string result = "" ;
-    if ( a.points > b.points ) result += "a" ; // (1)
-    else if ( b.points > a.points ) result += "b" ; // (2)
-    else result += "x" ; // (3)
-
-    if ( a.suit ==  HEART || a.suit == DIAMOND ) result += "aR" ; // (4) red
-    else result += "aB" ; // (6)
-
-    if ( b.suit ==  HEART || b.suit == DIAMOND ) result += "bR" ; // (5) red
-    else result += "bB" ; // (7)
-
-    if ( a.points & 1 == 1 ) result += "aO" ; // (8) odd
-    else result += "aE" ; // (9)
-
-    if ( b.points & 1 == 1 ) result += "bO" ; // (10) odd
-    else result += "bE" ; // (11)
-
-    return result ;*/
-}
-
-void eoscrazytown::give_out_bonus ( const string result ) {
-
-}
-
-void eoscrazytown::reveal(const checksum256 &seed, const checksum256 &hash) {
-    require_auth(_self);
-    
-    /*
-    auto result = getResult ( a, b ) ;
-    string presult = "" ;
-    for ( auto p = begin(players) ; p != end(players) ; ++p ) {
-        presult = "" ;
-        // exp:
-        // r:  xaRbBaObE
-        // pr: annaRaBnnbBnnaEbOnn
-        if ( result[0] == 'x' ) { // draw
-            presult += 'x' ; 
+extern "C" {
+    void apply(uint64_t receiver, uint64_t code, uint64_t action) {
+        crazytown thiscontract(receiver);
+        if ((code == N(eosio.token)) && (action == N(transfer))) {
+            execute_action(&thiscontract, &crazytown::onTransfer);
+            return;
         }
-        else { 
-            if ( p->beton[0] == result[0] )
-                presult += 'w' ; // win
-            else
-                presult += 'l' ; // lose
-        }
-
-        
-        if ( p->beton.substr(1,2) == result.substr(1,2) ) // 
-        if ( p->beton.substr(3,2) == result.substr(3,2) )
-        if ( p->beton.substr(5,2) == result.substr(5,2) )
-        if ( p->beton.substr(7,2) == result.substr(7,2) )
-        
-        
-
+        if (code != receiver) return;
+        switch (action) { EOSIO_API(crazytown, (transfer)(init)(test)(reveal) ) };
+        eosio_exit(0);
     }
-
-    */
-
-
-    // assert_sha256((char *)&seed, sizeof(seed), (const checksum256 *)&global.begin()->hash);
-    // auto n = offers.available_primary_key();
-    /*
-    for (int i = 0; i < n; ++i) {
-        auto itr = offers.find(i);
-        deal_with(itr, seed);
-    }
-    auto itr = global.find(0);
-    global.modify(itr, 0, [&](auto &g) {
-        g.hash = hash;
-        g.offerBalance = 0;
-    });*/
 }

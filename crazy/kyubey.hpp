@@ -16,8 +16,11 @@
 #include <eosiolib/contract.hpp>
 #include <eosiolib/transaction.hpp>
 
+#include <cmath>
+
 #define EOS_SYMBOL S(4, EOS)
-#define KBY_SYMBOL S(4, KBY)
+#define KBY_SYMBOL S(4, CZT)
+#define DMT_SYMBOL S(4, CZT)
 
 typedef double real_type;
 
