@@ -15,7 +15,7 @@ cleos -u http://api-direct.eosasia.one  set contract eoscrazytown eoscrazytown -
 #cleos -u http://api-direct.eosasia.one push action eoscrazytown transfer '[ "minakokojima", "eoscrazytown", "499.9937 KBYY", "sell"]' -p minakokojima@active
 
 
-cleos -u https://api-kylin.eosasia.one get table tokendapppub tokendapppub accounts
+cleos -u http://api-direct.eosasia.one get table tokendapppub godofdapppub games
 
 # cleos -u https://api-kylin.eosasia.one get table eoscrazytown eoscrazytown accounts
 # cleos -u http://api-direct.eosasia.one push action eosio.token transfer '[ "minakokojima", "eoscrazytown", "1.0000 EOS", "buy"]' -p minakokojima@active
