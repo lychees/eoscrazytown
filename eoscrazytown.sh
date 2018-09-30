@@ -4,10 +4,10 @@
 
 cleos wallet unlock --password PW5JaGpLtoM1vtD1WxiAC4RDsr82FRUczmKgocw1KJZqVahB4LZ1u
 #/usr/local/eosio/bin/eosiocpp -g eoscrazytown/eoscrazytown.abi eoscrazytown/eoscrazytown.cpp
-/usr/local/eosio/bin/eosiocpp -o eoscrazytown/eoscrazytown.wast eoscrazytown/eoscrazytown.cpp
+/usr/local/eosio/bin/eosiocpp -o crazy/eoscrazytown.wast crazy/eoscrazytown.cpp
 
 # Set Contract
-cleos -u http://api-direct.eosasia.one  set contract eoscrazytown eoscrazytown -p eoscrazytown@active
+#cleos -u http://api-direct.eosasia.one  set contract eoscrazytown eoscrazytown -p eoscrazytown@active
 
 # cleos -u https://api-kylin.eosasia.one push action eoscrazytown test '[""]' -p eoscrazytown@active
 #cleos -u http://api-direct.eosasia.one push action eoscrazytown init '[""]' -p eoscrazytown@active
@@ -15,7 +15,7 @@ cleos -u http://api-direct.eosasia.one  set contract eoscrazytown eoscrazytown -
 #cleos -u http://api-direct.eosasia.one push action eoscrazytown transfer '[ "minakokojima", "eoscrazytown", "499.9937 KBYY", "sell"]' -p minakokojima@active
 
 
-cleos -u http://api-direct.eosasia.one get table tokendapppub godofdapppub games
+#cleos -u http://api-direct.eosasia.one get table tokendapppub godofdapppub games
 
 # cleos -u https://api-kylin.eosasia.one get table eoscrazytown eoscrazytown accounts
 # cleos -u http://api-direct.eosasia.one push action eosio.token transfer '[ "minakokojima", "eoscrazytown", "1.0000 EOS", "buy"]' -p minakokojima@active
