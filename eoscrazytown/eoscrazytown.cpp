@@ -8,13 +8,15 @@ void crazytown::init(const checksum256 &hash) {
     auto g = global.find(0);
     if (g == global.end()) {        
         global.emplace(_self, [&](auto &g) {
-            g.id = 0;
-            g.defer_id = 0;
+            g.id = 16 * 16;
+            g.defer_id = 16 * 16 *16;
             g.hash = hash;
             g.offerBalance = 0;
         });
     } else {                
         global.modify(g, 0, [&](auto &g) {
+            g.id = 16 * 16;
+            g.defer_id = 16 * 16 *16;            
             g.hash = hash;
         });        
     }
@@ -26,7 +28,7 @@ void crazytown::init(const checksum256 &hash) {
             m.deposit.balance.symbol = EOS_SYMBOL;*/
         });
         // 这里限制发行 DMT 为 225000 个 DMT 修改上限注意修改几个整形溢出的问题。
-        create(_self, asset(2250000000ll, DMT_SYMBOL));
+//        create(_self, asset(2250000000ll, DMT_SYMBOL));
     }
 }
 

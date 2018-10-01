@@ -59,8 +59,8 @@ class crazytown : public kyubey {
 
         // @abi table global i64
         struct global {
-            uint64_t id = 0;        
-            uint64_t defer_id = 0;
+            uint128_t id = 0;        
+            uint128_t defer_id = 1;
             checksum256 hash; // hash of the game seed, 0 when idle.
             uint64_t offerBalance; // All balance in offer list.
 
